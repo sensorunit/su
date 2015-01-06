@@ -29,18 +29,19 @@ Sprinkler::Sprinkler(int pinSM, int pinPump):Device(pinPump)
 void Sprinkler::setup()
 {
 	pinMode(m_pinPump, OUTPUT);
+	digitalWrite(m_pinPump, HIGH);
 }
 
 void Sprinkler::open()
 {
-	digitalWrite(m_pinPump, HIGH);
-	delay(SPRINKLER_DELAY);
 	digitalWrite(m_pinPump, LOW);
+	delay(SPRINKLER_DELAY);
+	digitalWrite(m_pinPump, HIGH);
 }
 
 void Sprinkler::close()
 {
-	digitalWrite(m_pinPump, LOW);
+	digitalWrite(m_pinPump, HIGH);
 }
 
 int Sprinkler::get(char *buf, size_t size)
