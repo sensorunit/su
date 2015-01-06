@@ -38,13 +38,18 @@ void Sprinkler::open()
 	digitalWrite(m_pinPump, LOW);
 }
 
+void Sprinkler::close()
+{
+	digitalWrite(m_pinPump, LOW);
+}
+
 int Sprinkler::get(char *buf, size_t size)
 {
 	item_t res = itemNew();
 	int sm = analogRead(m_pinSM);
 	
 	if (sm < SPRINKLER_SOIL_MOISTURE)
-		sm = (SPRINKLER_SOIL_MOISTURE - sm) * 100 / SPRINKLER_SOIL_MOISTURE;
+		sm = (SPRINKLER_SOIL_MOISTURE - sm) / float(SPRINKLER_SOIL_MOISTURE)  * 100;
 	else
 		sm = 0;
 	res += item("SM", String(sm));

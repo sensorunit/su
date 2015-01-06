@@ -31,3 +31,8 @@ void Pump::open()
 	delay(PUMP_DELAY);
 	digitalWrite(getIndex(), LOW);
 }
+
+void Pump::close()
+{
+	digitalWrite(getIndex(), LOW);
+}

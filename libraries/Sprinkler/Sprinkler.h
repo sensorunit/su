@@ -3,7 +3,7 @@
 
 #include "../Device/Device.h"
 
-#define SPRINKLER_DELAY			3000
+#define SPRINKLER_DELAY			2000
 #define SPRINKLER_SOIL_MOISTURE 1023
 
 class Sprinkler: public Device
@@ -13,6 +13,7 @@ public:
 
 public:
 	void open();
+	void close();
 	void setup();
 	int get(char *buf, size_t size);
 	const char *name() {return "Sprinkler";}

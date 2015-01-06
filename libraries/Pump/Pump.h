@@ -2,7 +2,8 @@
 #define _PUMP_H_
 
 #include "../Device/Device.h"
-#define PUMP_DELAY 	50
+
+#define PUMP_DELAY 	2000
 
 class Pump: public Device
 {
@@ -11,6 +12,7 @@ public:
 
 public:
 	void open();
+	void close();
 	void setup();
 	const char *name() {return "Pump";}
 };
