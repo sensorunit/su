@@ -12,7 +12,7 @@ public:
 
 public:
 	int put(char *in, size_t inlen, char *out, size_t outlen);
-	const char *name() {return "Light";}
+	const char *name() {return "LIGHT";}
 
 private:
 	int check();

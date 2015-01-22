@@ -14,7 +14,7 @@ public:
 	int loop();
 	void setup();
 	int get(char *buf, size_t size);
-	const char *name() {return "Button";}
+	const char *name() {return "BUTTON";}
 
 private:
 	bool m_active;

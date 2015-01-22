@@ -14,7 +14,7 @@ public:
 	int loop();
 	void setup();
 	int get(char *buf, size_t size);
-	const char *name() {return "Pyroelectric";}
+	const char *name() {return "PYROELECTRIC";}
 
 private:
 	int check();

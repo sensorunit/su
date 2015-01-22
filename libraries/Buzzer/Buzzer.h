@@ -2,7 +2,7 @@
 #define _BUZZER_H_
 
 #include "../Device/Device.h"
-#define BUZZER_FREQUENCY    5000
+#define BUZZER_FREQ    5000
 
 class Buzzer: public Device
 {
@@ -15,7 +15,7 @@ public:
 	void setup();
 
 public:
-	const char *name() {return "Buzzer";}
+	const char *name() {return "BUZZER";}
 };
 
 #endif

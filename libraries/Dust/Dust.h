@@ -11,7 +11,7 @@ public:
 
 public:
 	int get(char *buf, size_t size);
-	const char *name() {return "Dust";}
+	const char *name() {return "DUST";}
 
 private:
 	int m_result;

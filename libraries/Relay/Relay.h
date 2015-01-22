@@ -12,7 +12,7 @@ public:
 	void open();
 	void close();
 	void setup();
-	const char *name() {return "Relay";}
+	const char *name() {return "RELAY";}
 };
 
 #endif

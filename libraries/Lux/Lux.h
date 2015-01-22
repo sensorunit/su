@@ -13,7 +13,7 @@ public:
 
 public:
 	int get(char *buf, size_t size);
-	const char *name() {return "Lux";}
+	const char *name() {return "LUX";}
 
 private:
 	int check();

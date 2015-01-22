@@ -27,7 +27,7 @@ void Buzzer::setup()
 
 void Buzzer::open()
 {
-	tone(getIndex(), BUZZER_FREQUENCY);
+	tone(getIndex(), BUZZER_FREQ);
 }
 
 void Buzzer::close()
