@@ -1,9 +1,7 @@
 #ifndef _PYROELECTRIC_H_
 #define _PYROELECTRIC_H_
 
-#include "../Device/Device.h"
-
-#define PYROELECTRIC_INTERVAL		20
+#include "../Controller/Device.h"
 
 class Pyroelectric: public Device
 {
@@ -11,13 +9,13 @@ public:
 	Pyroelectric(int pin);
 
 public:
-	int loop();
+	bool loop();
 	void setup();
+	String info();
 	int get(char *buf, size_t size);
-	const char *name() {return "PYROELECTRIC";}
 
 private:
-	int check();
+	bool check();
 
 private:
 	int m_status;

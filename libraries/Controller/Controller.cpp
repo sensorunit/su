@@ -20,24 +20,63 @@
 
 #include "Controller.h"
 
-void Controller::reply(Com *com, size_t len)
+Device *_notifier = NULL;
+
+Controller::Controller()
+{
+	m_len = 0;
+	m_total = 0;
+	m_mount = false;
+}
+
+void Controller::setup()
+{
+	m_comm.setup();
+	for (int i = 0; i < m_total; i++)
+		m_devices[i]->setup();
+}
+
+
+int Controller::add(Device *device)
+{
+	if (m_total == DEVICE_MAX)
+		return -1;
+	
+	m_devices[m_total] = device;
+	m_total++;
+	return 0;
+}
+
+void Controller::reply(Device *device, size_t len)
 {
 	if (len > 0) {
-		m_buf[0] = '{';
-		m_buf[len + 1] = '}';
-		com->put(m_buf, len + 2);
+		item_t key = itemKey(device->getIndex());
+		
+		m_rep[key.length() + len + 2] = '}';
+		m_rep[key.length() + len + 3] = '}';
+		m_comm.put(m_rep, key.length() + len + 4);
 	} else
-		com->put(m_buf, 0);
+		m_comm.put(m_rep, 0);
 }
 
-char *Controller::getReplyBuf()
+char *Controller::getReplyBuf(Device *device)
 {
-	return &m_buf[1];
+	int len;
+	int index = device->getIndex();
+	item_t key = itemKey(index);
+	
+	m_rep[0] = '{';
+	key.toCharArray(&m_rep[1], REP_SIZE - 1);
+	len = 1 + key.length();
+	m_rep[len] = '{';
+	return &m_rep[len + 1];
 }
 
-const size_t Controller::getReplyBufSize()
+const size_t Controller::getReplyBufSize(Device *device)
 {
-	return BUF_SIZE - 2;
+	item_t key = itemKey(device->getIndex());
+	
+	return REP_SIZE - 4 - key.length();
 }
 
 int Controller::getRequest(req_t *req)
@@ -45,32 +84,55 @@ int Controller::getRequest(req_t *req)
 	if (m_len < REQ_HEAD_SIZE)
 		return -1;
 
-	memcpy(&req->index, m_buf, 4);
-	memcpy(&req->flags, &m_buf[4], 4);
-	req->buf = &m_buf[REQ_HEAD_SIZE];
+	memcpy(&req->index, m_req, 4);
+	memcpy(&req->flags, &m_req[4], 4);
+	req->buf = &m_req[REQ_HEAD_SIZE];
 	req->len = m_len - REQ_HEAD_SIZE;
 	return 0;
 }
 
-int Controller::pair(Com *com, Unit *unit)
+void Controller::getDeviceInfo()
+{
+	int len;
+	int index;
+	item_t key;
+	item_t info;
+	
+	m_rep[0] = '{';
+	index = m_devices[0]->getIndex();
+	key = itemKey(index);
+	key.toCharArray(&m_rep[1], REP_SIZE - 1);
+	len = 1 + key.length();
+	info = m_devices[0]->info();
+	info.toCharArray(&m_rep[len], REP_SIZE - len);
+	len += info.length();
+	for (int i = 1; i < m_total; i++) {
+		index = m_devices[i]->getIndex();
+		key = itemKeyNext(index);
+		key.toCharArray(&m_rep[len], REP_SIZE - len);
+		len += key.length();
+		info = m_devices[i]->info();
+		info.toCharArray(&m_rep[len], REP_SIZE - len);
+		len += info.length(); 
+	}
+	m_rep[len] = '}';
+	m_comm.put(m_rep, len + 1);
+}
+
+void Controller::mount()
 {
 	int len;
 
-	if (strncmp(&m_buf[REQ_HEAD_SIZE], REQ_SECRET, strlen(REQ_SECRET)))
-		return -1;
+	if (strncmp(&m_req[REQ_HEAD_SIZE], REQ_SECRET, strlen(REQ_SECRET)))
+		return;
 
-	len = unit->list(getReplyBuf(), getReplyBufSize());
-	if (len < 0)
-		return -1;
-
-	reply(com, len);
-	com->makeReady();
-	return 0;
+	getDeviceInfo();
+	m_mount = true;
 }
 
-int Controller::listen(Com *com)
+int Controller::listen()
 {
-	int ret = com->get(m_buf, BUF_SIZE);
+	int ret = m_comm.get(m_req, REQ_SIZE);
 
 	if (ret > 0) {
 		m_len = ret;
@@ -79,75 +141,81 @@ int Controller::listen(Com *com)
 		return -1;
 }
 
-void Controller::procEvent(Com *com, Unit *unit)
+void Controller::checkEvent()
 {
-	int total;
-
-	if(!com->ready())
+	if(!m_mount)
 		return;
-
-	total = unit->count();
-	for (int i = 0; i < total; i++) {
-		Device *device = unit->get(i);
-		int ret = device->loop();
-
-		if (ret == POLLIN) {
-			int len = device->get(getReplyBuf(), getReplyBufSize());
+	
+	for (int i = 0; i < m_total; i++) {
+		Device *device = m_devices[i];
+		
+		if (device->loop()) {
+			int len = device->get(getReplyBuf(device), getReplyBufSize(device));
 
 			if (len > 0)
-				reply(com, len);
+				reply(device, len);
 		}
 	}
 }
 
 void Controller::reset()
 {
-	void (*func)(void) = 0; 
+	void (*func)(void) = 0;
+	
+	m_mount = false;
 	func();
 }
 
-void Controller::procRequest(Com *com, Unit *unit)
+Device *Controller::find(int index)
 {
+	for (int i = 0; i < m_total; i++)
+		if (m_devices[i]->getIndex() == index)
+			return m_devices[i];
+	return NULL;
+}
+
+void Controller::checkRequest()
+{
+	int len;
 	req_t req;
 	Device *device;
 
-	if (listen(com) < 0)
+	if (listen() < 0)
 		return;
 
 	if (getRequest(&req) < 0)
 		return;
 
-	if (req.flags & REQ_PAIR) {
-		if (!com->ready())
-			pair(com, unit);
+	if (req.flags & REQ_MOUNT) {
+		mount();
 		return;
 	} else if (req.flags & REQ_RESET) {
 		reset();
 		return;
 	}
 	
-	if(!com->ready())
+	if(!m_mount)
 		return;
 
-	device = unit->find(req.index);
+	device = find(req.index);
 	if (!device)
 		return;
 
 	if (req.flags & REQ_OPEN) {
     	device->open();
 	} else if (req.flags & REQ_GET) {
-		int len = device->get(getReplyBuf(), getReplyBufSize());
-		reply(com, len);
+		len = device->get(getReplyBuf(device), getReplyBufSize(device));
+		reply(device, len);
 	} else if (req.flags & REQ_PUT) {
-		int len = device->put(req.buf, req.len, getReplyBuf(), getReplyBufSize());
-		reply(com, len);
+		len = device->put(req.buf, req.len, getReplyBuf(device), getReplyBufSize(device));
+		reply(device, len);
 	} else if (req.flags & REQ_CLOSE) {
 		device->close();
 	}
 }
 
-void Controller::process(Com *com, Unit *unit)
+void Controller::proc()
 {
-	procRequest(com, unit);
-	procEvent(com, unit);
+	checkRequest();
+	checkEvent();
 }

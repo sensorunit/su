@@ -26,47 +26,55 @@ Pyroelectric::Pyroelectric(int pin):Device(pin)
 	m_status = 0;
 }
 
+String Pyroelectric::info()
+{
+	item_t range = itemNew("Enable", itemRange("False", "True"));
+	
+	return itemInfo("Pyroelectric", MODE_VISI | MODE_TRIG, range, 0);
+}
+
 void Pyroelectric::setup()
 {
 	pinMode(getIndex(), INPUT);
 }
 
-int Pyroelectric::check()
+bool Pyroelectric::check()
 {
 	if(HIGH == digitalRead(getIndex())) {
 		enableNotifier();
-		return 1;
+		return true;
 	} else {
 		disableNotifier();
-		return 0;
+		return false;
 	}
 }
 
-int Pyroelectric::loop()
+bool Pyroelectric::loop()
 {
-	int status;
+	bool status;
 	unsigned long time = millis();
+	const int check_interval = 20;
 
-	if (time - m_time < PYROELECTRIC_INTERVAL)
-		return 0;
+	if (time - m_time < check_interval)
+		return false;
 
 	m_time = time;
 	status = check();
 	if (status != m_status) {
 		m_status = status;
-		return POLLIN;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 int Pyroelectric::get(char *buf, size_t size)
 {
-  	item_t res = itemNew();
+  	item_t res;
 
 	if (m_status)
-		res += item("Enable", "True");
+		res = itemNew("Enable", "True");
 	else
-		res += item("Enable", "False");
+		res = itemNew("Enable", "False");
 
-	return itemGet(res, buf, size);
+	return itemCopy(res, buf, size);
 }

@@ -1,4 +1,4 @@
-/*      TH.cpp (Temperature & Humidity)
+/*      HT.cpp (Humidity and Temperature)
  *
  *      Copyright (C) 2014  Yanpeng Li <lyp40293@gmail.com>
  *
@@ -18,14 +18,21 @@
  *      MA 02110-1301, USA.
  */
 
-#include "TH.h"
+#include "HT.h"
 
-int TH::get(char *buf, size_t size)
+String HT::info()
 {
+	item_t range = itemNew("H", itemRange(0, 100)) + itemNext("T", itemRange(0, 100));
+	
+	return itemInfo("HT", MODE_POLL | MODE_SYNC | MODE_VISI | MODE_OUT, range, 0.01);
+}
+
+int HT::get(char *buf, size_t size)
+{
+	item_t res;
 	uint8_t cnt = 7;
 	uint8_t idx = 0;
 	uint8_t data[5];
-	item_t res = itemNew();
 	unsigned int loopCnt = 10000;
 
 	for(int i = 0; i < 5; i++)
@@ -35,7 +42,7 @@ int TH::get(char *buf, size_t size)
 	digitalWrite(getIndex(), LOW);
 	delay(18);
 	digitalWrite(getIndex(), HIGH);
-	delayMicroseconds(HOST_WAIT_TIME);
+	delayMicroseconds(40);
 	pinMode(getIndex(), INPUT);
 
 	loopCnt = 10000;
@@ -71,14 +78,14 @@ int TH::get(char *buf, size_t size)
 			cnt--;
 	}
 
-	delayMicroseconds(PRE_DATA_TIME * 2);
+	delayMicroseconds(100);
 	pinMode(getIndex(), OUTPUT);
 	digitalWrite(getIndex(), HIGH);
 
 	if(data[4] != data[0] + data[2])
 		return 0;
 
-	res += item("T", String(data[2]));
-	res += item("H", String(data[0]));
-	return itemGet(res, buf, size);
+	res = itemNew("H", String(data[0]));
+	res += itemNext("T", String(data[2]));
+	return itemCopy(res, buf, size);
 }

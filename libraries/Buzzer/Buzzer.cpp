@@ -20,6 +20,13 @@
 
 #include "Buzzer.h"
 
+String Buzzer::info()
+{
+	item_t range = itemNew("Enable", itemRange("False", "True"));
+	
+	return itemInfo("Buzzer", MODE_VISI | MODE_SWITCH, range, 0);
+}
+
 void Buzzer::setup()
 {
 	pinMode(getIndex(), OUTPUT);
@@ -27,7 +34,7 @@ void Buzzer::setup()
 
 void Buzzer::open()
 {
-	tone(getIndex(), BUZZER_FREQ);
+	tone(getIndex(), 5000);
 }
 
 void Buzzer::close()

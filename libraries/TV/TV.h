@@ -1,8 +1,7 @@
 #ifndef _TV_H_
 #define _TV_H_
 
-#include "../Device/Device.h"
-#define TV_DELAY 	50
+#include "../Controller/Device.h"
 
 class TV: public Device
 {
@@ -13,7 +12,7 @@ public:
 	void open();
 	void close();
 	void setup();
-	const char *name() {return "TV";}
+	String info();
 };
 
 #endif

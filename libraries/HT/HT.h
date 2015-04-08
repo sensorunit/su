@@ -1,12 +1,12 @@
-#ifndef _LIGHT_H_
-#define _LIGHT_H_
+#ifndef _HT_H_
+#define _HT_H_
 
 #include "../Controller/Device.h"
 
-class Light: public Device
+class HT: public Device
 {
 public:
-	Light(int pin):Device(pin) {}
+	HT(int pin):Device(pin) {}
 
 public:
 	String info();

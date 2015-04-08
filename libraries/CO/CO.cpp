@@ -20,11 +20,18 @@
 
 #include "CO.h"
 
+String CO::info()
+{
+	item_t range = itemNew("PPM", itemRange(0, 1000));
+	
+	return itemInfo("CO", MODE_POLL | MODE_SYNC | MODE_VISI | MODE_OUT, range, 0.01);
+}
+
 int CO::get(char *buf, size_t size)
 {
-	item_t res = itemNew();
+	item_t res;
 	int co = analogRead(getIndex());
 
-	res += item("PPM", String(co));
-	return itemGet(res, buf, size);
+	res = itemNew("PPM", String(co));
+	return itemCopy(res, buf, size);
 }

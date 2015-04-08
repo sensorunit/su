@@ -1,11 +1,9 @@
-#ifndef _PIN_H_
-#define _PIN_H_
-
-#define PIN_SM0						0
-#define PIN_TH0						12
-#define PIN_LED0					8
-#define PIN_PUMP0					6
-#define PIN_HCHO0					1
-#define PIN_DUST0					9
-
-#endif
+#define PIN_DUST0	4
+#define PIN_IRD0	5
+#define PIN_PE0		6
+#define PIN_HT0		7
+#define PIN_BTN0	8
+#define PIN_LIGHT0	9
+#define PIN_SM0		10
+#define PIN_HCHO0	11
+#define PIN_LED0	12

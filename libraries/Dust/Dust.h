@@ -1,8 +1,7 @@
 #ifndef _DUST_H_
 #define _DUST_H_
 
-#include "../Device/Device.h"
-#define DUST_INTERVAL  30000
+#include "../Controller/Device.h"
 
 class Dust: public Device
 {
@@ -10,8 +9,8 @@ public:
 	Dust(int pin);
 
 public:
+	String info();
 	int get(char *buf, size_t size);
-	const char *name() {return "DUST";}
 
 private:
 	int m_result;

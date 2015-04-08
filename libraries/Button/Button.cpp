@@ -26,18 +26,26 @@ Button::Button(int pin):Device(pin)
 	m_active = false;
 }
 
+String Button::info()
+{
+	item_t range = itemNew("Enable", itemRange("False", "True"));
+	
+	return itemInfo("Button", MODE_VISI | MODE_TRIG, range, 0);
+}
+
 void Button::setup()
 {
 	pinMode(getIndex(), INPUT);
 }
 
-int Button::loop()
+bool Button::loop()
 {
 	int ret = 0;
+	const int check_interval = 10;
 	unsigned long time = millis();
 
-	if (time - m_time < BUTTON_INTERVAL)
-		return 0;
+	if (time - m_time < check_interval)
+		return false;
 
 	m_time = time;
 
@@ -47,15 +55,15 @@ int Button::loop()
 	} else {
 		if (m_active) {
 			m_active = false;
-			ret = POLLIN;
+			return true;
 		}
 	}
-	return ret;
+	return false;
 }
 
 int Button::get(char *buf, size_t size)
 {
-	item_t res = itemNew() + item("Enable", "True");
+	item_t res = itemNew("Enable", "True");
 
-	return itemGet(res, buf, size);
+	return itemCopy(res, buf, size);
 }

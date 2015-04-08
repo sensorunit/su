@@ -1,4 +1,4 @@
-/*      SM.cpp (Soil Moisture) 
+/*      SoilMoisture.cpp 
  *		
  *      Copyright (C) 2014  Yanpeng Li <lyp40293@gmail.com>
  *
@@ -18,17 +18,25 @@
  *      MA 02110-1301, USA.
  */
 
-#include "SM.h"
+#include "SoilMoisture.h"
 
-int SM::get(char *buf, size_t size)
+String SoilMoisture::info()
 {
-	item_t res = itemNew();
-	int sm = analogRead(getIndex());
+	item_t range = itemNew("SM", itemRange(0, 100));
 	
-	if (sm < SM_MAX)
-		sm = (SM_MAX - sm) * 100 / SM_MAX;
+	return itemInfo("SoilMoisture", MODE_POLL | MODE_SYNC | MODE_VISI | MODE_OUT, range, 0.01);
+}
+
+int SoilMoisture::get(char *buf, size_t size)
+{
+	item_t res;
+	int val = analogRead(getIndex());
+	
+	if (val < SOILMOISTURE_MAX)
+		val = (SOILMOISTURE_MAX - val) * 100 / SOILMOISTURE_MAX;
 	else
-		sm = 0;
-	res += item("SM", String(sm));
-	return itemGet(res, buf, size);
+		val = 0;
+	
+	res = itemNew("SM", String(val));
+	return itemCopy(res, buf, size);
 }

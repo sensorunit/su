@@ -1,8 +1,7 @@
 #ifndef _BUZZER_H_
 #define _BUZZER_H_
 
-#include "../Device/Device.h"
-#define BUZZER_FREQ    5000
+#include "../Controller/Device.h"
 
 class Buzzer: public Device
 {
@@ -13,9 +12,7 @@ public:
 	void open();
 	void close();
 	void setup();
-
-public:
-	const char *name() {return "BUZZER";}
+	String info();
 };
 
 #endif

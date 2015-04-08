@@ -1,7 +1,7 @@
 #ifndef _LED_H_
 #define _LED_H_
 
-#include "../Device/Device.h"
+#include "../Controller/Device.h"
 
 class LED: public Device
 {
@@ -14,7 +14,7 @@ public:
 	void setup();
 
 public:
-	const char *name() {return "LED";}
+	String info() {return itemInfo("LED", MODE_VISI | MODE_SWITCH, "", 0);}
 };
 
 #endif

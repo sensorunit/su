@@ -1,4 +1,4 @@
-/*      EG.cpp (Entrance Guard)
+/*      EntranceGuard.cpp
  *
  *      Copyright (C) 2014  Yanpeng Li <lyp40293@gmail.com>
  *
@@ -18,36 +18,47 @@
  *      MA 02110-1301, USA.
  */
 
-#include "EG.h"
+#include "EntranceGuard.h"
 
-void EG::setup()
+String EntranceGuard::info()
+{
+	item_t range = itemNew("Enable", itemRange("False", "True"));
+	
+	return itemInfo("EntranceGuard", MODE_VISI | MODE_SWITCH, range, 0);
+}
+
+void EntranceGuard::setup()
 {
 	m_time = 0;
 	pinMode(getIndex(), OUTPUT);
 }
 
-void EG::blink()
+void EntranceGuard::flash()
 {
-	for (int i = 0; i < EG_BLINK_TIMES; i++) {
+	const int times = 10;
+	const int interval = 2;
+	
+	for (int i = 0; i < times; i++) {
 		enableNotifier();
-		delay(EG_BLINK_INTERVAL);
+		delay(interval);
 		disableNotifier();
-		delay(EG_BLINK_INTERVAL);
+		delay(interval);
 	}
 }
-void EG::open()
+void EntranceGuard::open()
 {
 	unsigned long time = millis();
+	unsigned long interval = 5000;
 	
-	if (time - m_time > EG_RESET_INTERVAL) {
+	if (time - m_time > interval) {
 		digitalWrite(getIndex(), HIGH);
-		blink();
+		flash();
 		digitalWrite(getIndex(), LOW);
 		m_time = time;
 	}
 }
 
-void EG::close()
+void EntranceGuard::close()
 {
 	digitalWrite(getIndex(), LOW);
 }

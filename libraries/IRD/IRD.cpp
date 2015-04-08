@@ -22,8 +22,15 @@
 
 IRD::IRD(int pin):Device(pin)
 {
-	m_cnt = 0;
 	m_time = 0;
+	m_rounds = 0;
+}
+
+String IRD::info()
+{
+	item_t range = itemNew("Enable", itemRange("False", "True"));
+	
+	return itemInfo("IRD", MODE_VISI | MODE_TRIG, range, 0);
 }
 
 void IRD::setup()
@@ -31,31 +38,31 @@ void IRD::setup()
 	pinMode(getIndex(), INPUT);
 }
 
-int IRD::loop()
+bool IRD::loop()
 {
-	int ret = 0;
+	const int rounds = 30;
+	const int check_interval = 20;
 	unsigned long time = millis();
-
-	if (time - m_time < IRD_INTERVAL)
-		return 0;
+	
+	if (time - m_time < check_interval)
+		return false;
 	
 	m_time = time;
-
 	if (!digitalRead(getIndex()))
-		m_cnt++;
+		m_rounds++;
 	else
-		m_cnt = 0;
+		m_rounds = 0;
 
-	if (m_cnt == IRD_COUNT) {
-		m_cnt = 0;
-		ret = POLLIN;
+	if (m_rounds == rounds) {
+		m_rounds = 0;
+		return true;
 	}
-	return ret;
+	return false;
 }
 
 int IRD::get(char *buf, size_t size)
 {
-  item_t res = itemNew() + item("Enable", "True");
+  item_t res = itemNew("Enable", "True");
   
-  return itemGet(res, buf, size);
+  return itemCopy(res, buf, size);
 }

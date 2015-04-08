@@ -20,6 +20,13 @@
 
 #include "Relay.h"
 
+String Relay::info()
+{
+	item_t range = itemNew("Enable", itemRange("False", "True"));
+	
+	return itemInfo("Relay", MODE_VISI | MODE_SWITCH, range, 0);
+}
+
 void Relay::setup()
 {
 	pinMode(getIndex(), OUTPUT);

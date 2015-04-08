@@ -20,6 +20,13 @@
 
 #include "TV.h"
 
+String TV::info()
+{
+	item_t range = itemNew("Enable", itemRange("False", "True"));
+	
+	return itemInfo("TV", MODE_VISI | MODE_SWITCH, range, 0);
+}
+
 void TV::setup()
 {
 	pinMode(getIndex(), OUTPUT);
@@ -28,13 +35,13 @@ void TV::setup()
 void TV::open()
 {
 	digitalWrite(getIndex(), HIGH);
-	delay(TV_DELAY);
+	delay(50);
 	digitalWrite(getIndex(), LOW);
 }
 
 void TV::close()
 {
 	digitalWrite(getIndex(), HIGH);
-	delay(TV_DELAY);
+	delay(50);
 	digitalWrite(getIndex(), LOW);
 }

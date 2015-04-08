@@ -27,18 +27,26 @@ Dust::Dust(int pin):Device(pin)
 	m_time = millis();
 }
 
+String Dust::info()
+{
+	item_t range = itemNew("CF", itemRange(0, 1000));
+	
+	return itemInfo("Dust", MODE_POLL | MODE_SYNC | MODE_VISI | MODE_OUT, range, 0.01);
+}
+
 int Dust::get(char *buf, size_t size)
 {
-	item_t res = itemNew();
+	item_t res;
 	unsigned long time = millis();
+	const int check_interval = 30000;
 
 	m_lo += pulseIn(getIndex(), LOW);
-	if((time - m_time) >= DUST_INTERVAL) {
-		float r = m_lo / (DUST_INTERVAL * 10.0);
+	if((time - m_time) >= check_interval) {
+		float r = m_lo / (check_interval * 10.0);
 		m_result = (int)(1.1 * pow(r, 3) - 3.8 * pow(r, 2) + 520 * r + 0.62);
 		m_time = time;
 		m_lo = 0;
 	}
-	res += item("CF", String(m_result));
-	return itemGet(res, buf, size);
+	res = itemNew("CF", String(m_result));
+	return itemCopy(res, buf, size);
 }

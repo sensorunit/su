@@ -20,11 +20,18 @@
 
 #include "HCHO.h"
 
+String HCHO::info()
+{
+	item_t range = itemNew("PPM", itemRange(0, 1000));
+	
+	return itemInfo("HCHO", MODE_POLL | MODE_SYNC | MODE_VISI | MODE_OUT, range, 0.01);
+}
+
 int HCHO::get(char *buf, size_t size)
 {
-	item_t res = itemNew();
-	int hcho = analogRead(getIndex());
+	item_t res;
+	int val = analogRead(getIndex());
 
-	res += item("PPM", String(hcho));
-	return itemGet(res, buf, size);
+	res = itemNew("PPM", String(val));
+	return itemCopy(res, buf, size);
 }

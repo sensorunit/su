@@ -1,9 +1,7 @@
 #ifndef _PUMP_H_
 #define _PUMP_H_
 
-#include "../Device/Device.h"
-
-#define PUMP_DELAY 	4000
+#include "../Controller/Device.h"
 
 class Pump: public Device
 {
@@ -14,7 +12,7 @@ public:
 	void open();
 	void close();
 	void setup();
-	const char *name() {return "PUMP";}
+	String info();
 };
 
 #endif

@@ -1,10 +1,7 @@
 #ifndef _IRD_H_
 #define _IRD_H_
 
-#include "../Device/Device.h"
-
-#define IRD_COUNT 		30
-#define IRD_INTERVAL	20
+#include "../Controller/Device.h"
 
 class IRD: public Device
 {
@@ -12,13 +9,13 @@ public:
 	IRD(int pin);
 
 public:
-	int loop();
+	bool loop();
 	void setup();
+	String info();
 	int get(char *buf, size_t size);
-	const char *name() {return "IRD";}
 
 private:
-	int m_cnt;
+	int m_rounds;
 	unsigned long m_time;
 };
 

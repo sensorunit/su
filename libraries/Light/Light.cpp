@@ -20,18 +20,18 @@
 
 #include "Light.h"
 
-int Light::put(char *in, size_t inlen, char *out, size_t outlen)
+String Light::info()
 {
-	item_t res = itemNew();	
+	item_t range = itemNew("Lux", itemRange(0, 1000));
+	
+	return itemInfo("Light", MODE_POLL | MODE_SYNC | MODE_VISI | MODE_OUT, range, 0.01);
+}
 
-	if (isEnabled(in, inlen)) {
-		if (analogRead(getIndex()) > LIGHT_THRESHOLD)
-			res += item("Enable", "True");
-		else
-			res += item("Enable", "False");	
-	} else {
-		res += item("Enable", "False");
-	}
-
-	return itemGet(res, out, outlen);
+int Light::get(char *buf, size_t size)
+{
+	item_t res;
+	int val = analogRead(getIndex());
+	
+	res = itemNew("Lux", val);
+	return itemCopy(res, buf, size);
 }

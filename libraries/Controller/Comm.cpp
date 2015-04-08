@@ -1,6 +1,6 @@
-/*      Com.cpp
+/*      Comm.cpp
  *
- *      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
+ *      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.Comm>
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -18,35 +18,24 @@
  *      MA 02110-1301, USA.
  */
 
-#include "Com.h"
+#include "Comm.h"
 #include "CRC.h"
 #include "Arduino.h"
 
-Com::Com()
+Comm::Comm()
 {
 	m_ch = 0;
 	m_count = 0;
-	m_ready = 0;
 	m_start = 0;
 }
 
-void Com::makeReady()
+void Comm::setup()
 {
-	m_ready = 1;
+	Serial.begin(COMM_RATE);
+	Serial.setTimeout(COMM_TIMEOUT);
 }
 
-void Com::setup()
-{
-	Serial.begin(COM_RATE);
-	Serial.setTimeout(COM_TIMEOUT);
-}
-
-int Com::ready()
-{
-	return m_ready;
-}
-
-int Com::recv()
+int Comm::recv()
 {
 	char ch;
 	int ret = -1;
@@ -55,19 +44,19 @@ int Com::recv()
 		return ret;
 
 	ch = Serial.read();
-	if (COM_DLE == m_ch) {
-		if (COM_STX == ch) {
+	if (COMM_DLE == m_ch) {
+		if (COMM_STX == ch) {
 			m_count = 0;
 			m_start = 1;
-		} else if (COM_ETX == ch) {
+		} else if (COMM_ETX == ch) {
 			if (m_start) {
 				m_start = 0;
 				if (m_count >= CRC_SIZE)
 					ret = m_count;
 			}
-		} else if (COM_DLE == ch) {
+		} else if (COMM_DLE == ch) {
 			if (m_start) {
-				if (COM_MAX_LEN == m_count) {
+				if (COMM_MAX_LEN == m_count) {
 					m_start = 0;
 				} else {
 					m_buf[m_count] = ch;
@@ -75,8 +64,8 @@ int Com::recv()
 				}
 			}
 		}
-	} else if (m_start && (ch != COM_DLE)) {
-		if (COM_MAX_LEN == m_count) {
+	} else if (m_start && (ch != COMM_DLE)) {
+		if (COMM_MAX_LEN == m_count) {
 			m_start = 0;
 		} else {
 			m_buf[m_count] = ch;
@@ -87,7 +76,7 @@ int Com::recv()
 	return ret;
 }
 
-int Com::get(char *buf, int length)
+int Comm::get(char *buf, int length)
 {
 	int size = recv();
 
@@ -107,30 +96,30 @@ int Com::get(char *buf, int length)
 	}
 }
 
-void Com::send(char *buf, int length)
+void Comm::send(char *buf, int length)
 {
 	int i;
 
 	for (i = 0; i < length; i++) {
 		Serial.write(buf[i]);
-		if (COM_DLE == buf[i])
-			Serial.write(COM_DLE);
+		if (COMM_DLE == buf[i])
+			Serial.write(COMM_DLE);
 	}
 }
 
-void Com::sendBytes(char *buf, int length)
+void Comm::sendBytes(char *buf, int length)
 {
 	for (int i = 0; i < length; i++)
 		Serial.write(buf[i]);
 }
 
-void Com::put(char *buf, int length)
+void Comm::put(char *buf, int length)
 {
 	CRC crc = CRC();
 	crc_t code = crc.encode(buf, length);
 
-	sendBytes(COM_HEAD, COM_HEAD_LEN);
+	sendBytes(COMM_HEAD, COMM_HEAD_LEN);
 	send((char *)&code, sizeof(crc_t));
 	send(buf, length);
-	sendBytes(COM_TAIL, COM_TAIL_LEN);
+	sendBytes(COMM_TAIL, COMM_TAIL_LEN);
 }

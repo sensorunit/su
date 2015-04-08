@@ -22,11 +22,18 @@
 
 USD::USD(int pinTrig, int pinEcho):Device(pinTrig)
 {
-	m_cnt = 0;
-	m_hit = 0;
+	m_hits = 0;
 	m_time = 0;
+	m_rounds = 0;
 	m_pinTrig = pinTrig;
 	m_pinEcho = pinEcho;
+}
+
+String USD::info()
+{
+	item_t range = itemNew("Enable", itemRange("False", "True"));
+	
+	return itemInfo("USD", MODE_VISI | MODE_TRIG, range, 0);
 }
 
 void USD::setup()
@@ -35,9 +42,11 @@ void USD::setup()
 	pinMode(m_pinEcho, INPUT);
 }
 
-int USD::check()
+bool USD::check()
 {
 	float distance;
+	const int d0 = 30;
+	const int d1 = 70;
 
 	digitalWrite(m_pinTrig, LOW);
 	delayMicroseconds(2);
@@ -45,47 +54,49 @@ int USD::check()
 	delayMicroseconds(10);
 	digitalWrite(m_pinTrig, LOW);
 	distance = pulseIn(m_pinEcho, HIGH) / 58.82;
-	if ((distance > USD_DISTANCE0) && (distance < USD_DISTANCE1))
-		return 1;
+	if ((distance > d0) && (distance < d1))
+		return true;
 	else
-		return 0;
+		return false;
 }
 
-int USD::loop()
+bool USD::loop()
 {
-	int ret = 0;
+	const int hits = 10;
+	const int rounds = 25;
 	unsigned long time = millis();
+	const int check_interval = 20;
 
-	if (time - m_time < USD_INTERVAL)
-		return 0;
+	if (time - m_time < check_interval)
+		return false;
 
 	m_time = time;
   
-	if (m_cnt > 0)
-		m_cnt++;
+	if (m_rounds > 0)
+		m_rounds++;
 
 	if (check()) {
-		if (!m_cnt) {
-			m_cnt = 1;
+		if (!m_rounds) {
+			m_hits = 1;
+			m_rounds = 1;
 			enableNotifier();
-		}
-		m_hit++;
+		} else
+			m_hits++;
 	} 
-	else if (!m_cnt)
+	else if (!m_rounds)
 		disableNotifier();
 
-	if (m_cnt == USD_COUNT) {
-		if (m_hit >= USD_HIT)
-			ret = POLLIN;
-		m_cnt = 0;
-		m_hit = 0;
+	if (m_rounds == rounds) {
+		m_rounds = 0;
+		if (m_hits >= hits)
+			return true;
 	}
-    return ret;
+    return false;
 }
 
 int USD::get(char *buf, size_t size)
 {
-	item_t res = itemNew() + item("Enable", "True");
+	item_t res = itemNew("Enable", "True");
 	
-	return itemGet(res, buf, size);
+	return itemCopy(res, buf, size);
 }

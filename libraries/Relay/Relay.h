@@ -1,7 +1,7 @@
 #ifndef _RELAY_H_
 #define _RELAY_H_
 
-#include "../Device/Device.h"
+#include "../Controller/Device.h"
 
 class Relay: public Device
 {
@@ -12,7 +12,7 @@ public:
 	void open();
 	void close();
 	void setup();
-	const char *name() {return "RELAY";}
+	String info();
 };
 
 #endif

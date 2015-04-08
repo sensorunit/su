@@ -20,6 +20,13 @@
 
 #include "Pump.h"
 
+String Pump::info()
+{
+	item_t range = itemNew("Enable", itemRange("False", "True"));
+	
+	return itemInfo("Pump", MODE_VISI | MODE_SWITCH, range, 0);
+}
+
 void Pump::setup()
 {
 	pinMode(getIndex(), OUTPUT);
@@ -28,7 +35,7 @@ void Pump::setup()
 void Pump::open()
 {
 	digitalWrite(getIndex(), HIGH);
-	delay(PUMP_DELAY);
+	delay(4000);
 	digitalWrite(getIndex(), LOW);
 }
 
